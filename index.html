@@ -3,19 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BTV SSplitsbare werkwoorden kwartetn</title>
+    <title>BTV UNIT SYNC v2.5 - BEVEILIGD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Harde blokkade op selectie en interactie */
         body {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            background-color: #f1f5f9;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+            background-color: #f1f5f9; font-family: ui-sans-serif, system-ui, sans-serif;
         }
-        .no-inspect { pointer-events: none; }
-        .interactive-card { pointer-events: auto; }
+        .kwartet-alert { animation: slideIn 0.5s ease-out; }
+        @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .card-shadow { box-shadow: 0 25px 50px -12px rgba(0, 45, 94, 0.25); }
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -30,144 +27,174 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Versleutelde Database (Base64)
-        const encryptedData = [
+        // Geëncripteerde Database (Base64) - 40 Zinnen incl. 'Verzet BIJ'
+        const rawDB = [
+            {p: "Ymlq", z: "SGlqIHZlcnpldHRlIHppY2ggYmlqIHppam4gYWFuaG91ZGluZy4="},
             {p: "b3A=", z: "RGUgYWdlbnQgbW9ldCBnb2VkIGxldHRlbiBvcCBzbGluZ2VyZW5kIGdlZHJhZy4="},
             {p: "b3A=", z: "V2Ugd2FjaHRlbiBvcCB0b2VzdGVtbWluZyB2YW4gZGUgb2ZmaWNpZXIu"},
             {p: "dmFu", z: "RGUgbWFuIHdlcmQgYmVzY2h1bGRpZ2QgdmFuIHp3YXJlIG1pc2RocmlmYmVyZWlkLg=="},
-            {p: "dGVnZW4=", z: "SGlqIHZlcnpldHRlIHppY2ggdGVnZW4gemlqbiBhYW5ob3VkaW5nLg=="},
             {p: "Ymlq", z: "V2llIHdhcyBlciBiZXRyb2trZW4gYmlqIGRlemUgYWFucmlqZGluZz8="},
-            {p: "Ymlq", z: "RGUgaHVscyB3ZXJkIGdldm9uZGVuIGJpaiBoZXQgc2xhY2h0b2ZmZXIu"},
             {p: "bmFhcg==", z: "V2lqIHppam4gbm9nIG9wIHpvZWsgbmFhciBkZSBlaWdlbmFhci4="},
             {p: "b3Zlcg==", z: "RGUgYnV1cnQga2xhYWd0IGFsIHdla2VuIG92ZXIgZ2VsdWlkc292ZXJsYXN0Lg=="},
             {p: "bWV0", z: "RGUgb3ZlcnZhbGxlciBkcmVpZ2RlIG1ldCBlZW4gdnV1cndhcGVuLg=="},
-            {p: "dm9vcg==", z: "QmVkYW5rdCB2b29yIHV3IG1lZGV3ZXJraW5nIGFhbiBkaXQgb25kZXJ6b2VrLg=="}
-            // De rest van de 40 items worden hier analoog toegevoegd in de definitieve versie
+            {p: "dm9vcg==", z: "QmVkYW5rdCB2b29yIHV3IG1lZGV3ZXJraW5nIGFhbiBkaXQgb25kZXJ6b2VrLg=="},
+            {p: "b20=", z: "RGUgc3VydmVpbGxhbnQgdnJvZWcgb20gemlqbiByaWpiZXdpcyBlbiBrZW50ZWtlbi4="},
+            {p: "YWFu", z: "SGV0IHZvZXJ0dWlnIHZvbGRlZWQgbmlldCBhYW4gZGUgaW5yaWNodGluZ2Vpc2VuLg=="},
+            {p: "YWFu", z: "SWsgdHdpamZlbCBzdGVyayBhYW4gZGUganVpc3RoZWlkIHZhbiBkaXQgYWxpYmku"},
+            {p: "Ymlq", z: "RGUgaHVscyB3ZXJkIGdldm9uZGVuIGJpaiBoZXQgbGljaGFhbS4="},
+            {p: "b3A=", z: "QWdlbnRlbiByZWtlbmVuIGFsdGlqZCBvcCBodW4gYmFja3VwLg=="},
+            {p: "dmFu", z: "SGV0IHZhc3RzdGVsbGVuIHZhbiBkZSBpZGVudGl0ZWl0IGlzIHZlcnBsaWNodC4="},
+            {p: "dGVnZW4=", z: "RGUgcG9saXRpZSB0cmVlZHQgaGFyZCBvcCB0ZWdlbiBvbmRlcm1pbmVpbmcu"},
+            {p: "b20=", z: "RGUgb2ZmaWNpZXIgZ2FmIGJldmVsIG9tIGRlIGludmFsIHRlIHN0YXJ0ZW4u"},
+            {p: "b3Zlcg==", z: "RGUgcmVjaHRlciBiZXNsaXN0IG1vcmdlbiBvdmVyIGRlIGhlY2h0ZW5pcy4="},
+            {p: "bWV0", z: "RGUgdmluZ2VyYWZkcnVrIHdlcmQgdmVyZ2VsZWtlbiBtZXQgZGUgZGF0YWJhc2Uu"},
+            {p: "dm9vcg==", z: "RGUgYWdlbnQgem9yZ3Qgdm9vciBlZW4gdmVpbGlnZSBhZnpldHRpbmcu"},
+            {p: "Ymlq", z: "WmlqIHdlcmt0IGFscyByZWNoZXJjaGV1ciBiaWogZGUgemVkZW5wb2xpdGllLg=="},
+            {p: "b3A=", z: "RGUgbWVsZGthbWVyIHJlYWdlZXJ0IGRpcmVjdCBvcCBkZSAxMTItbWVsZGluZy4="},
+            {p: "dmFu", z: "RGUgZ2V0dWlnZSBzY2hyb2sgdmFuIGRlIGx1aWRlIGtsYXAu"},
+            {p: "dGVnZW4=", z: "RW4gaXMgZWVuIFBWIHRlZ2VuIGRlIHZlcmRhY2h0ZSBvcGdlbWFha3Qu"},
+            {p: "YWFu", z: "RGUgdmVyZGFjaHRlIGdFbiBnZWhvb3IgYWFuIGhldCBzdG9wdGVrZW4u"},
+            {p: "b20=", z: "SGV0IHNsYWNodG9mZmVyIHJpZXAgbHVpZCBvbSBodWxwLg=="},
+            {p: "bmFhcg==", z: "RGUgZ2V0dWlnZSB2ZXJ3ZWVzIG5hYXIgZWVuIGJsYXV3ZSB2bHVjaHRhdXRvLg=="},
+            {p: "b3Zlcg==", z: "RGUgdmVyZGFjaHRlIGxvZyBvdmVyIHppam4gdmVyYmxpamZwbGFhdHMu"},
+            {p: "bWV0", z: "RGUgcG9saXRpZSBidW1vZWl0IHppY2ggbmlldCBtZXQgcHJpdsV6YWtlbi4="},
+            {p: "dm9vcg==", z: "RGUgZGFkZXIgcHJvYmVlcmRlIHRlIHZsdWNodGVuIHZvb3IgZGUgcG9saXRpZS4="},
+            {p: "Ymlq", z: "RGUgZGFkZXIgaXMgYmV0cmFwdCBiaWogZGUgaW5icmFhay4="},
+            {p: "b3A=", z: "RGUgdmVyZGFjaHRlIHdhY2h0IG9wIGRlIHVpdHNwcmFhay4="},
+            {p: "dmFu", z: "SGlqIHdlcmQgYmVzY2h1bGRpZ2QgdmFuIG9wdm9yaW5nLg=="},
+            {p: "dGVnZW4=", z: "WmlqIGRpZW5kZSBlZW4ga2xhY2h0IGluIHRlZ2VuIGRlIGtvcnBzY2hlZi4="},
+            {p: "YWFu", z: "SG91ZCBqZSBhbHRpamQgYWFuIGRlIHZlcmtZcnNyZWdlbHMu"},
+            {p: "b20=", z: "RGUgb21zdGFuZGVycyBsYWNodGVuIG9tIGRlIG9uaGFuZ2lnZSBkaWVmLg=="},
+            {p: "bmFhcg==", z: "RXIgd29yZHQgb25kZXJ6b2VrIGdlZGFhbiBuYWFyIGRlIG9vcnphYWsu"},
+            {p: "b3Zlcg==", z: "V2UgbW9ldGVuIG5hZGVua2VuIG92ZXIgZGUgc3RyYXRlZ2llLg=="},
+            {p: "bWV0", z: "RGUgdmVyZGFjaHRlIGdpbmcgYWtrb29yZCBtZXQgZGUgc2NoaWtraW5nLg=="},
+            {p: "dm9vcg==", z: "RXIgemlqbiBzdGVya2UgYWFud2lqemluZ2VuIHZvb3IgZWVuIG1pc2RyaWpmLg=="}
         ];
 
-        // Decryptie functie
-        const decode = (str) => decodeURIComponent(escape(window.atob(str)));
-
-        // Anti-Inspectie Scripts
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && (e.key === 'u' || e.key === 'c' || e.key === 'i') || e.key === 'F12') {
-                e.preventDefault();
-                alert("Systeembeveiliging: Kopiëren niet toegestaan.");
-            }
-        });
+        const dec = (s) => atob(s);
+        document.addEventListener('keydown', e => { if (e.ctrlKey && (e.key === 'u' || e.key === 'c' || e.key === 'i') || e.key === 'F12') e.preventDefault(); });
         document.oncontextmenu = () => false;
 
         window.startDienst = () => {
-            const naam = document.getElementById('naam').value.trim().toUpperCase();
-            const klas = document.getElementById('klasSelect').value;
-            if(!naam) return;
-            window.user = { naam, klas };
-            assignRandomCard();
-            document.getElementById('auth').style.display = 'none';
+            const n = document.getElementById('naam').value.trim().toUpperCase();
+            const k = document.getElementById('klasSelect').value;
+            if(!n) return;
+            window.user = { naam: n, klas: k };
+            document.getElementById('auth').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
-            loadLeaderboard();
-            listenForSharedSentences();
+            assignCard(); loadLeaderboard(); listenToKlas(); listenToAlerts();
         };
 
-        function assignRandomCard() {
+        function assignCard() {
             const isP = Math.random() > 0.5;
-            const raw = encryptedData[Math.floor(Math.random() * encryptedData.length)];
-            window.currentCard = { p: decode(raw.p), z: decode(raw.z), type: isP ? 'P' : 'Z' };
-            renderCard();
+            const item = rawDB[Math.floor(Math.random() * rawDB.length)];
+            window.current = { p: dec(item.p), z: dec(item.z), type: isP ? 'P' : 'Z' };
+            render();
         }
 
-        function renderCard() {
-            const display = document.getElementById('card-display');
-            const action = document.getElementById('action-area');
-            
-            if(window.currentCard.type === 'P') {
-                display.innerHTML = `
-                    <div class="bg-[#002d5e] text-white p-12 rounded-[3rem] shadow-2xl text-center border-b-8 border-yellow-500 interactive-card">
-                        <span class="text-[10px] font-black opacity-40 uppercase tracking-widest">Actief Voorzetsel</span>
-                        <h2 class="text-7xl font-black italic my-6">${window.currentCard.p.toUpperCase()}</h2>
-                    </div>`;
-                action.innerHTML = `<div id="shared-list" class="grid gap-3 interactive-card"></div>`;
+        function render() {
+            const main = document.getElementById('main-card');
+            const interaction = document.getElementById('interaction-area');
+            if(window.current.type === 'P') {
+                main.innerHTML = `<div class="bg-[#002d5e] text-white p-12 rounded-[3rem] card-shadow text-center border-b-8 border-yellow-500">
+                    <span class="text-[10px] font-black opacity-40 uppercase tracking-widest italic">Voorzetsel-Agent</span>
+                    <h2 class="text-7xl font-black italic my-6">${window.current.p.toUpperCase()}</h2>
+                </div>`;
+                interaction.innerHTML = `<div id="feed" class="grid gap-3 mt-6"></div>`;
             } else {
-                const gat = window.currentCard.z.replace(new RegExp(window.currentCard.p, 'i'), "___");
-                display.innerHTML = `
-                    <div class="bg-white p-12 rounded-[3rem] shadow-xl border-4 border-[#002d5e] text-center interactive-card">
-                        <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Jouw Bewijsstuk</span>
-                        <h2 class="text-xl font-bold italic my-6 text-[#002d5e]">"${gat}"</h2>
-                        <button onclick="shareSentence()" class="bg-[#002d5e] text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase">Verzend naar Klas</button>
-                    </div>`;
-                action.innerHTML = `<p class="text-center text-slate-400 font-bold text-[8px] uppercase italic">Wacht op koppeling...</p>`;
+                const gat = window.current.z.replace(new RegExp(window.current.p, 'gi'), "___");
+                main.innerHTML = `<div class="bg-white p-12 rounded-[3rem] shadow-xl border-4 border-[#002d5e] text-center">
+                    <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest italic">Informatie-Bron</span>
+                    <h2 class="text-xl font-bold italic my-6 text-[#002d5e]">"${gat}"</h2>
+                    <button onclick="share()" class="bg-[#002d5e] text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase shadow-lg active:scale-95 transition-all">Deel met Unit</button>
+                </div>`;
+                interaction.innerHTML = `<p class="text-center text-slate-400 font-bold text-[8px] uppercase mt-10 italic">Wacht op koppeling door partner...</p>`;
             }
         }
 
-        window.shareSentence = () => {
-            push(ref(db, `lessen/${window.user.klas}/shared`), {
-                sender: window.user.naam,
-                fullZin: window.currentCard.z,
-                p: window.currentCard.p
-            });
-            alert("Informatie gedeeld met de eenheid.");
+        window.share = () => {
+            push(ref(db, `lessen/${window.user.klas}/shared`), { sender: window.user.naam, z: window.current.z, p: window.current.p });
+            alert("Informatie gedeeld!");
         };
 
-        function listenForSharedSentences() {
+        function listenToKlas() {
             onValue(ref(db, `lessen/${window.user.klas}/shared`), (snap) => {
-                if(!window.currentCard || window.currentCard.type !== 'P') return;
-                const list = document.getElementById('shared-list');
-                list.innerHTML = "";
+                if(!window.current || window.current.type !== 'P') return;
+                const feed = document.getElementById('feed'); feed.innerHTML = "";
                 const data = snap.val();
                 if(data) {
-                    Object.entries(data).forEach(([key, val]) => {
-                        const btn = document.createElement('button');
-                        btn.className = "w-full p-5 bg-white border-2 border-slate-100 rounded-3xl text-left text-[11px] font-bold hover:border-[#002d5e] transition-all flex justify-between items-center shadow-sm";
-                        btn.innerHTML = `<span>${val.fullZin}</span><span class="text-[8px] text-slate-300 uppercase">${val.sender}</span>`;
-                        btn.onclick = () => {
-                            if(val.p === window.currentCard.p) {
+                    Object.entries(data).forEach(([id, val]) => {
+                        const b = document.createElement('button');
+                        b.className = "w-full p-5 bg-white border-2 border-slate-100 rounded-3xl text-left text-[11px] font-bold hover:border-[#002d5e] transition-all flex justify-between items-center shadow-sm";
+                        b.innerHTML = `<span>${val.z}</span><span class="text-[8px] text-slate-300 uppercase">${val.sender}</span>`;
+                        b.onclick = () => {
+                            if(val.p.toLowerCase() === window.current.p.toLowerCase()) {
+                                const pk = val.p.toLowerCase();
                                 set(ref(db, `lessen/${window.user.klas}/scores/${window.user.naam}`), increment(1));
-                                remove(ref(db, `lessen/${window.user.klas}/shared/${key}`)); 
-                                assignRandomCard();
-                            } else {
-                                alert("Geen match.");
-                            }
+                                const kRef = ref(db, `lessen/${window.user.klas}/kwartetten/${pk}`);
+                                set(kRef, increment(1));
+                                onValue(kRef, (s) => { 
+                                    if(s.val() === 4) { 
+                                        push(ref(db, `lessen/${window.user.klas}/alerts`), { msg: `🚨 KWARTET '${pk.toUpperCase()}'! +5 BONUS VOOR ${window.user.naam} 🚨` });
+                                        set(ref(db, `lessen/${window.user.klas}/scores/${window.user.naam}`), increment(5));
+                                        set(kRef, 0);
+                                    }
+                                }, {onlyOnce: true});
+                                remove(ref(db, `lessen/${window.user.klas}/shared/${id}`));
+                                assignCard();
+                            } else { alert("Foutieve match."); }
                         };
-                        list.appendChild(btn);
+                        feed.appendChild(b);
                     });
+                }
+            });
+        }
+
+        function listenToAlerts() {
+            onValue(ref(db, `lessen/${window.user.klas}/alerts`), (snap) => {
+                const data = snap.val();
+                if(data) {
+                    const last = Object.values(data).pop();
+                    const a = document.getElementById('alert-box');
+                    a.innerText = last.msg; a.classList.remove('hidden');
+                    setTimeout(() => a.classList.add('hidden'), 5000);
                 }
             });
         }
 
         function loadLeaderboard() {
             onValue(ref(db, `lessen/${window.user.klas}/scores`), (snap) => {
-                const list = document.getElementById('ranking');
-                list.innerHTML = "";
-                const data = snap.val();
-                if(data) {
-                    Object.entries(data).sort((a,b) => b[1] - a[1]).forEach(([naam, score]) => {
-                        list.innerHTML += `<div class="flex justify-between p-4 bg-slate-50 mb-3 rounded-2xl border-r-4 border-[#002d5e] font-black text-[10px]"><span>${naam}</span><span>${score} PTS</span></div>`;
-                    });
-                }
+                const l = document.getElementById('leaderboard'); l.innerHTML = "";
+                const d = snap.val();
+                if(d) Object.entries(d).sort((a,b)=>b[1]-a[1]).forEach(([n,s]) => {
+                    l.innerHTML += `<div class="flex justify-between p-4 bg-slate-50 mb-2 rounded-2xl border-r-4 border-[#002d5e] font-black text-[10px]"><span>${n}</span><span>${s} PTS</span></div>`;
+                });
             });
         }
     </script>
 </head>
 <body class="p-4">
+    <div id="alert-box" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-[60] bg-yellow-400 text-[#002d5e] px-8 py-4 rounded-full font-black text-xs kwartet-alert shadow-2xl border-2 border-white"></div>
+
     <div id="auth" class="fixed inset-0 bg-[#002d5e] z-50 flex items-center justify-center p-6">
         <div class="bg-white p-12 rounded-[4rem] w-full max-w-sm text-center shadow-2xl">
-            <h1 class="text-3xl font-black italic text-[#002d5e] mb-10 uppercase tracking-tighter">BTV SECURE</h1>
+            <h1 class="text-4xl font-black italic text-[#002d5e] mb-10 uppercase tracking-tighter">UNIT SYNC</h1>
             <input type="text" id="naam" placeholder="AGENT NAAM" class="w-full bg-slate-50 p-5 rounded-2xl mb-4 font-bold uppercase text-xs outline-none">
             <select id="klasSelect" class="w-full bg-slate-50 p-5 rounded-2xl mb-10 font-bold uppercase text-xs outline-none">
-                <option value="ALFA">UNIT ALFA</option><option value="BRAVO">UNIT BRAVO</option>
-                </select>
-            <button onclick="startDienst()" class="w-full bg-[#002d5e] text-white p-5 rounded-2xl font-black uppercase text-xs shadow-xl active:scale-95 transition-all">Start Spel</button>
+                <option value="ALFA">UNIT ALFA</option><option value="BRAVO">UNIT BRAVO</option><option value="CHARLIE">UNIT CHARLIE</option><option value="DELTA">UNIT DELTA</option>
+            </select>
+            <button onclick="startDienst()" class="w-full bg-[#002d5e] text-white p-5 rounded-2xl font-black uppercase text-xs shadow-xl active:scale-95 transition-all">Start Patrouille</button>
         </div>
     </div>
 
     <div id="app" class="hidden max-w-5xl mx-auto pt-10 grid lg:grid-cols-12 gap-10">
         <div class="lg:col-span-8">
-            <div id="card-display" class="mb-8"></div>
-            <div id="action-area" class="p-6"></div>
+            <div id="main-card"></div>
+            <div id="interaction-area"></div>
         </div>
-        <aside class="lg:col-span-4 bg-white p-8 rounded-[3rem] shadow-xl">
-            <h3 class="font-black text-[#002d5e] uppercase italic text-center mb-8 pb-4 text-xs tracking-widest border-b">Top Agents</h3>
-            <div id="ranking"></div>
+        <aside class="lg:col-span-4 bg-white p-8 rounded-[3rem] shadow-xl border-t-8 border-[#002d5e]">
+            <h3 class="font-black text-[#002d5e] uppercase italic text-center mb-8 text-xs border-b pb-4">Unit Ranking</h3>
+            <div id="leaderboard"></div>
         </aside>
     </div>
 </body>
