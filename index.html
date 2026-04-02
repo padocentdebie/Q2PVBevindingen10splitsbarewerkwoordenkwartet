@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politie Kwartet: Voorzetsels</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, set, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBEod8zm1jvvkmPbe6cA_SQo2U_esC9yTY",
+            databaseURL: "https://aangiftebotje-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "aangiftebotje"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // De 40 kaarten (10 kwartetten van 4)
+        const kwartetData = [
+            { id: 1, p: "op", z: "De agent moet goed letten ___ slingerend gedrag." },
+            { id: 2, p: "op", z: "We wachten ___ toestemming van de officier." },
+            { id: 3, p: "op", z: "De meldkamer moet snel reageren ___ de oproep." },
+            { id: 4, p: "op", z: "Agenten rekenen altijd ___ hun backup." },
+            { id: 5, p: "van", z: "De man werd beschuldigd ___ zware mishandeling." },
+            { id: 6, p: "van", z: "Het vaststellen ___ de identiteit is verplicht." },
+            { id: 7, p: "van", z: "De verdachte bekende de diefstal ___ de rechercheur." },
+            { id: 8, p: "van", z: "De getuige schrok enorm ___ de luide knal." },
+            { id: 9, p: "tegen", z: "Hij verzette zich ___ zijn aanhouding." },
+            { id: 10, p: "tegen", z: "Er is een proces-verbaal ___ hem opgemaakt." },
+            { id: 11, p: "tegen", z: "De politie treedt hard op ___ overlast." },
+            { id: 12, p: "tegen", z: "Zij diende een klacht in ___ de beslissing." },
+            { id: 13, p: "aan", z: "Het voertuig voldeed niet ___ de inrichtingseisen." },
+            { id: 14, p: "aan", z: "Ik twijfel sterk ___ de juistheid van dit alibi." },
+            { id: 15, p: "aan", z: "De verdachte gaf gehoor ___ het stopteken." },
+            { id: 16, p: "aan", z: "Houd je altijd ___ de geldende verkeersregels." },
+            { id: 17, p: "om", z: "De surveillant vroeg ___ zijn rijbewijs." },
+            { id: 18, p: "om", z: "De omstanders lachten ___ de onhandige dief." },
+            { id: 19, p: "om", z: "Het slachtoffer riep luid ___ hulp." },
+            { id: 20, p: "om", z: "De officier gaf bevel ___ de inval." },
+            { id: 21, p: "bij", z: "Wie was er betrokken ___ deze aanrijding?" },
+            { id: 22, p: "bij", z: "De dader is op heterdaad betrapt ___ de inbraak." },
+            { id: 23, p: "bij", z: "Zij werkt als rechercheur ___ de zedenpolitie." },
+            { id: 24, p: "bij", z: "De huls werd gevonden ___ het slachtoffer." },
+            { id: 25, p: "naar", z: "Er wordt onderzoek gedaan ___ de oorzaak." },
+            { id: 26, p: "naar", z: "De getuige verwees ___ een blauwe vluchtauto." },
+            { id: 27, p: "naar", z: "Wij zijn nog op zoek ___ de eigenaar." },
+            { id: 28, p: "naar", z: "De agent informeerde ___ de weg." },
+            { id: 29, p: "over", z: "De buurt klaagt al weken ___ geluidsoverlast." },
+            { id: 30, p: "over", z: "De rechter beslist morgen ___ de hechtenis." },
+            { id: 31, p: "over", z: "We moeten goed nadenken ___ de strategie." },
+            { id: 32, p: "over", z: "De verdachte loog ___ zijn verblijfplaats." },
+            { id: 33, p: "met", z: "De overvaller dreigde ___ een vuurwapen." },
+            { id: 34, p: "met", z: "De vingerafdruk werd vergeleken ___ het dossier." },
+            { id: 35, p: "met", z: "De verdachte ging akkoord ___ de boete." },
+            { id: 36, p: "met", z: "De politie bemoeit zich niet ___ privézaken." },
+            { id: 37, p: "voor", z: "Er zijn sterke aanwijzingen ___ een misdrijf." },
+            { id: 38, p: "voor", z: "De dader probeerde te vluchten ___ de politie." },
+            { id: 39, p: "voor", z: "De agent zorgt ___ een veilige afzetting." },
+            { id: 40, p: "voor", z: "Bedankt ___ uw medewerking aan dit onderzoek." }
+        ];
+
+        window.startKwartet = () => {
+            const naam = document.getElementById('naam').value.trim().toUpperCase();
+            const klas = document.getElementById('klasSelect').value;
+            if(!naam || !klas) return alert("Credentials required.");
+            
+            window.user = { naam, klas };
+            // Krijg een random kaart: 50% kans op Zin-kaart, 50% kans op Voorzetsel-kaart
+            const isZinKaart = Math.random() > 0.5;
+            window.mijnKaart = kwartetData[Math.floor(Math.random() * kwartetData.length)];
+            window.mijnType = isZinKaart ? 'ZIN' : 'VOORZETSEL';
+
+            document.getElementById('auth').style.display = 'none';
+            document.getElementById('app').classList.remove('hidden');
+            renderKaart();
+            loadLeaderboard(klas);
+        };
+
+        function renderKaart() {
+            const cardEl = document.getElementById('my-card');
+            if (window.mijnType === 'ZIN') {
+                cardEl.innerHTML = `
+                    <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border-4 border-[#00529b] text-center">
+                        <p class="text-[10px] font-bold text-slate-400 mb-4 uppercase">Jouw Zin-kaart</p>
+                        <h2 class="text-xl font-black italic text-[#00529b]">"${window.mijnKaart.z}"</h2>
+                        <p class="mt-6 text-xs text-slate-500">Zoek iemand met het juiste voorzetsel!</p>
+                    </div>`;
+            } else {
+                cardEl.innerHTML = `
+                    <div class="bg-[#00529b] p-8 rounded-[2.5rem] shadow-xl text-center text-white">
+                        <p class="text-[10px] font-bold opacity-60 mb-4 uppercase">Jouw Voorzetsel-kaart</p>
+                        <h2 class="text-6xl font-black italic">"${window.mijnKaart.p.toUpperCase()}"</h2>
+                        <p class="mt-6 text-xs opacity-60">Zoek iemand met een passende zin!</p>
+                    </div>`;
+            }
+        }
+
+        window.pogingMatch = () => {
+            const ingevoerd = document.getElementById('match-input').value.trim().toLowerCase();
+            if (ingevoerd === window.mijnKaart.p) {
+                // Succes! Update leaderboard
+                const scoreRef = ref(db, `lessen/${window.user.klas}/scores/${window.user.naam}`);
+                set(scoreRef, increment(1));
+                
+                alert("MATCH! Goed gedaan. Je krijgt een nieuwe kaart.");
+                document.getElementById('match-input').value = "";
+                
+                // Geef nieuwe kaart
+                const isZinKaart = Math.random() > 0.5;
+                window.mijnKaart = kwartetData[Math.floor(Math.random() * kwartetData.length)];
+                window.mijnType = isZinKaart ? 'ZIN' : 'VOORZETSEL';
+                renderKaart();
+            } else {
+                alert("Helaas, dit voorzetsel klopt niet bij jouw kaart.");
+            }
+        };
+
+        function loadLeaderboard(klas) {
+            onValue(ref(db, `lessen/${klas}/scores`), (snap) => {
+                const list = document.getElementById('leader-list');
+                list.innerHTML = "";
+                const data = snap.val();
+                if(data) {
+                    const sorted = Object.entries(data).sort((a,b) => b[1] - a[1]);
+                    sorted.forEach(([naam, score]) => {
+                        list.innerHTML += `
+                            <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl mb-2 border-l-4 border-[#00529b]">
+                                <span class="font-bold text-xs uppercase">${naam}</span>
+                                <span class="bg-[#00529b] text-white px-3 py-1 rounded-full text-[10px] font-black">${score} PKTS</span>
+                            </div>`;
+                    });
+                }
+            });
+        }
+    </script>
+    <style>
+        .custom-shadow { box-shadow: 0 20px 50px rgba(0, 45, 94, 0.1); }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 font-sans p-4">
+
+    <div id="auth" class="fixed inset-0 bg-[#00529b] z-50 flex items-center justify-center p-6">
+        <div class="bg-white p-10 rounded-[3rem] w-full max-w-sm text-center shadow-2xl">
+            <h1 class="font-black text-2xl text-[#00529b] mb-2 italic uppercase tracking-tighter">Unit Kwartet</h1>
+            <p class="text-[9px] font-bold text-slate-400 mb-8 uppercase tracking-widest">Digital Police Training</p>
+            <input type="text" id="naam" placeholder="AGENT NAAM" class="w-full bg-slate-50 p-4 rounded-2xl mb-4 font-black uppercase text-xs outline-none focus:ring-2 ring-[#00529b]">
+            <select id="klasSelect" class="w-full bg-slate-50 p-4 rounded-2xl mb-8 font-black uppercase text-xs outline-none">
+                <option value="ALFA">ALFA</option><option value="BRAVO">BRAVO</option>
+                <option value="CHARLIE">CHARLIE</option><option value="DELTA">DELTA</option>
+                <option value="ECHO">ECHO</option><option value="FOXTROT">FOXTROT</option>
+                <option value="GOLF">GOLF</option><option value="HOTEL">HOTEL</option>
+                <option value="JULIETT">JULIETT</option><option value="KILO">KILO</option>
+                <option value="LIMA">LIMA</option><option value="MIKE">MIKE</option>
+            </select>
+            <button onclick="startKwartet()" class="w-full bg-[#00529b] text-white p-5 rounded-2xl font-black uppercase text-xs shadow-lg active:scale-95 transition-all">Dienst Starten</button>
+        </div>
+    </div>
+
+    <div id="app" class="hidden max-w-4xl mx-auto grid md:grid-cols-12 gap-8 pt-8">
+        
+        <div class="md:col-span-8">
+            <div id="my-card" class="mb-8"></div>
+            
+            <div class="bg-white p-8 rounded-[2.5rem] custom-shadow border border-slate-50 text-center">
+                <h3 class="font-black text-[#00529b] uppercase italic text-sm mb-4">Match Gevonden?</h3>
+                <p class="text-[10px] text-slate-400 mb-6">Voer het voorzetsel in dat de zin compleet maakt.</p>
+                <div class="flex gap-2">
+                    <input type="text" id="match-input" placeholder="..." class="flex-1 bg-slate-50 border-2 border-slate-100 p-4 rounded-2xl font-black uppercase text-center outline-none focus:border-[#00529b]">
+                    <button onclick="pogingMatch()" class="bg-[#00529b] text-white px-8 rounded-2xl font-black uppercase text-xs hover:bg-blue-800 transition-colors">Check</button>
+                </div>
+            </div>
+        </div>
+
+        <aside class="md:col-span-4">
+            <div class="bg-white p-6 rounded-[2.5rem] custom-shadow sticky top-8">
+                <h3 class="font-black text-[#00529b] uppercase italic text-center mb-6 border-b pb-4">Agent Ranking</h3>
+                <div id="leader-list">
+                    <p class="text-center text-[10px] text-slate-300 italic">Nog geen matches gemaakt...</p>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+</body>
+</html>
